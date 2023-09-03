@@ -10,3 +10,8 @@ Se recomienda la creación de un entorno virtual. A continuación un ejemplo fun
 conda create --prefix ./lambda_env python=3.11 pip numpy pandas scipy matplotlib seaborn astropy jupyter notebook ipywidgets
 ```
 (agregar `flake8 black black-jupyter` a la lista de paquetes para homogeneizar el formato es recomendado)
+
+Adicionalmente, la mayoría de los notebooks acceden a una variable de entorno para setear LAMBDA_Hub como la carpeta de trabajo. Para ello se debe crear un archivo local en LAMBDA_Hub/.env con la línea:
+```Python
+WORKINGDIR="/_Tu_/_Path_/_a_/LAMBDA_Hub"
+```

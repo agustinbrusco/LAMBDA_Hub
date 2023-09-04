@@ -7,7 +7,7 @@ En este repositorio se encuentra el código generado y los resultados obtenidos 
 ## Configuración del Entorno
 Se recomienda la creación de un entorno virtual. A continuación un ejemplo funcional creado utilizando anaconda:
 ```bash
-conda create --prefix ./lambda_env python=3.11 pip numpy pandas scipy matplotlib seaborn astropy jupyter notebook ipywidgets
+conda create --prefix ./lambda_env python=3.11 pip numpy pandas scipy matplotlib seaborn astropy jupyter notebook ipywidgets tqdm
 ```
 (agregar `flake8 black black-jupyter` a la lista de paquetes para homogeneizar el formato es recomendado)
 

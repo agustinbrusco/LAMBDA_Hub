@@ -19,3 +19,6 @@ micropython_firmware/
 ~$*.SLDPRT
 ~$*.SLDASM
 ~$*.sldprt
+
+# Virtual Machine Files
+System Volume Information/

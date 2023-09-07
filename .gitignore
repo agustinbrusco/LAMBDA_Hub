@@ -14,3 +14,8 @@ __pycache__/
 # Local Data & Files
 *.fits
 micropython_firmware/
+
+# SolidWorks Temp Files
+~$*.SLDPRT
+~$*.SLDASM
+~$*.sldprt

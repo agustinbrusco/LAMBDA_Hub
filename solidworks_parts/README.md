@@ -1,5 +1,5 @@
 # Proyecto de Módulo para la Exposición Controlada de Skipper-CCD
-En esta carpeta se encuentran los diseños de piezas que desarrollamos a lo largo de Laboratorio 6 para montar un experimento de exposición controlada en el cubo azul. Para más detalles, puede leerse el informe de Laboratorio 6 en `LAMBDA_Hub/informe_labo6/Informe_labo_6.pdf`.
+En esta carpeta se encuentran los diseños de piezas que desarrollamos a lo largo de Laboratorio 6 para montar un experimento de exposición controlada en el cubo azul. Para más detalles, puede leerse el informe de Laboratorio 6 en `LAMBDA_Hub/entregas_labo6/Informe_labo_6.pdf`.
 
 Los archivos en esta carpeta fueron guardados desde la versión 2020 de SolidWorks. Para compatibilidad con el software de otres laboratoristas, en la carpeta `solid_2016/` se encuentran versiones análogas de algunos archivos en formato válido para la versión 2016 de SolidWorks.
 

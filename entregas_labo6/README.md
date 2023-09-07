@@ -1,0 +1,4 @@
+# <center> Desarrollo de un Sistema para la Exposición Controlada de Sensores Skipper-CCD </center>
+En esta carpeta se encuentra el informe presentado en el marco de la materia Laboratorio 6 de la Licenciatura en Ciencias Físicas de la UBA. Además de la versión en PDF, en el archivo `Informe labo 6.zip` se incluye el código fuente en LaTeX y los archivos de imagen utilizados en el informe.
+
+También se incluye una copia en pdf de la charla presentada en el marco de la misma materia en el archivo `Sivilotti & Brusco - 2da Charla Labo 6.pdf`. Esta charla se diseñó en [Google Slides](https://docs.google.com/presentation/d/1_7KHWskDfpT9R2R01Ci1D7qhcYlsA6zttxgLDaoYM8o/edit?usp=sharing) y se presentó previo a la redacción del informe, por lo que en caso de conflicto, se debe hacer caso a los resultados presentados en el informe.

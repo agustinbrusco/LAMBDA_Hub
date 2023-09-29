@@ -8,7 +8,6 @@ runname=no_cover_shutter_calibration
 lockfilename=lockfile  # kind of an Env Var
 
 doClean(){
-        if [ ! -f "$lockfilename" ]; then break; fi
 	lta NROW 829
 	lta NCOL 336
 	lta NSAMP 1
@@ -18,7 +17,7 @@ doClean(){
 	}
 
 doSettings(){
-	rows=20  #829
+	rows=829
 	lta NROW $rows
     cols=336
 	lta NCOL $cols

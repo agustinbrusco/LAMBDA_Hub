@@ -16,6 +16,7 @@ __pycache__/
 *.fz
 *.dat
 micropython_firmware/
+skipper_data/*.png
 
 # SolidWorks Temp Files
 ~$*.SLDPRT

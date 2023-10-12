@@ -4,19 +4,28 @@ from ssd1306 import SSD1306_I2C
 from time import sleep
 
 
-def flash_pixel(oled, x, y, time_on):
+def flash_pixel(oled, x, y, t):
     oled.pixel(x, y, 1)
     oled.show()
-    sleep(time_on)
+    sleep(t)
     oled.fill(0)
     oled.show()
     return None
 
 
-def flash_rectangle(oled, x, y, lenght, height, time_on):
-    oled.fill_rect(x, y, lenght, height, 1)
+def flash_rectangle(oled, x, y, l, h, t):
+    oled.fill_rect(x, y, l, h, 1)
     oled.show()
-    sleep(time_on)
+    sleep(t)
+    oled.fill(0)
+    oled.show()
+    return None
+
+
+def flash_light_row(oled, x, y, w, t):
+    oled.hline(x, y, w, 1)
+    oled.show()
+    sleep(t)
     oled.fill(0)
     oled.show()
     return None
@@ -42,6 +51,12 @@ while keep_running:
             x, y, l, h, t = params
             x, y, l, h, t = int(x), int(y), int(l), int(h), float(t)
             flash_rectangle(oled, x, y, l, h, t)
+        if command == "toggle":
+            t = params
+            t = float(t)
+            x, y, w = 0, 32, 128
+            flash_light_row(oled, x, y, w, t)
+
     except Exception as e:
         oled.text(str(e), 0, 0)
         oled.show()

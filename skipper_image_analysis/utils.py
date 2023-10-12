@@ -39,15 +39,19 @@ def plot_ccd_image(
         overscan_pix = get_overscan_from_fits(image) - 8  # PREGUNTAR
         vertical_image = np.block(
             [
-                [image[0].data[:, :-overscan_pix], image[1].data[:, -overscan_pix::-1]],
+                # [image[0].data[:, :-overscan_pix], image[1].data[:, -overscan_pix::-1]],
+                # [image[2].data[:, :-overscan_pix], image[3].data[:, -overscan_pix::-1]],
                 [image[2].data[:, :-overscan_pix], image[3].data[:, -overscan_pix::-1]],
+                [image[0].data[::-1, :-overscan_pix], image[1].data[::-1, -overscan_pix::-1]],
             ],
         )
     elif isinstance(image, fits.hdu.hdulist.HDUList):
         vertical_image = np.block(
             [
-                [image[0].data, image[1].data[:, ::-1]],
+                # [image[0].data, image[1].data[:, ::-1]],
+                # [image[2].data, image[3].data[:, ::-1]],
                 [image[2].data, image[3].data[:, ::-1]],
+                [image[0].data[::-1, :], image[1].data[::-1, ::-1]],
             ],
         )
     else:
@@ -58,8 +62,10 @@ def plot_ccd_image(
             )
         vertical_image = np.block(
             [
-                [image[0], image[1][:, ::-1]],
+                # [image[0], image[1][:, ::-1]],
+                # [image[2], image[3][:, ::-1]],
                 [image[2], image[3][:, ::-1]],
+                [image[0][::-1, :], image[1][::-1, ::-1]],
             ],
         )
     if orientation == "horizontal":

@@ -18,6 +18,24 @@ def get_overscan_from_fits(
     return int(fits_imgs[0].header["NCOL"]) - int(fits_imgs[0].header["CCDNCOL"]) // 2
 
 
+def get_rowcol_ovserscan(
+    imgs: fits.hdu.hdulist.HDUList,
+) -> tuple[int]:
+    row_overscan_len = int(imgs[0].header["NROW"]) - int(imgs[0].header["CCDNROW"]) // 2
+    col_overscan_len = int(imgs[0].header["NCOL"]) - int(imgs[0].header["CCDNCOL"]) // 2
+    return row_overscan_len, col_overscan_len
+
+
+def correct_overscan(
+    imgs: fits.hdu.hdulist.HDUList,
+) -> tuple[int]:
+    row_overscan_len, col_overscan_len = get_rowcol_ovserscan(imgs)
+    for i, frame in enumerate(imgs):
+        imgs[i].data -= np.mean(frame.data[:, -col_overscan_len:], axis=1, keepdims=True)
+        imgs[i].data -= np.median(frame.data[-row_overscan_len:, :], axis=0, keepdims=True)
+    return imgs
+
+
 def mask_baseline_error(frame_vals: ArrayLike) -> ArrayLike:
     row_medians = np.median(frame_vals, axis=1)
     median_of_medians = np.median(row_medians)
@@ -36,20 +54,22 @@ def plot_ccd_image(
 ) -> tuple[plt.figure, plt.Axes]:
     global BLUE_CUBE_CMAP
     if remove_overscan and isinstance(image, fits.hdu.hdulist.HDUList):
-        overscan_pix = get_overscan_from_fits(image) - 8  # PREGUNTAR
+        row_overscan, col_overscan = get_rowcol_ovserscan(image)
         vertical_image = np.block(
             [
-                # [image[0].data[:, :-overscan_pix], image[1].data[:, -overscan_pix::-1]],
-                # [image[2].data[:, :-overscan_pix], image[3].data[:, -overscan_pix::-1]],
-                [image[2].data[:, :-overscan_pix], image[3].data[:, -overscan_pix::-1]],
-                [image[0].data[::-1, :-overscan_pix], image[1].data[::-1, -overscan_pix::-1]],
+                [
+                    image[2].data[:-row_overscan, :-col_overscan],
+                    image[3].data[:-row_overscan, -col_overscan::-1],
+                ],
+                [
+                    image[0].data[-row_overscan::-1, :-col_overscan],
+                    image[1].data[-row_overscan::-1, -col_overscan::-1],
+                ],
             ],
         )
     elif isinstance(image, fits.hdu.hdulist.HDUList):
         vertical_image = np.block(
             [
-                # [image[0].data, image[1].data[:, ::-1]],
-                # [image[2].data, image[3].data[:, ::-1]],
                 [image[2].data, image[3].data[:, ::-1]],
                 [image[0].data[::-1, :], image[1].data[::-1, ::-1]],
             ],
@@ -62,8 +82,6 @@ def plot_ccd_image(
             )
         vertical_image = np.block(
             [
-                # [image[0], image[1][:, ::-1]],
-                # [image[2], image[3][:, ::-1]],
                 [image[2], image[3][:, ::-1]],
                 [image[0][::-1, :], image[1][::-1, ::-1]],
             ],
@@ -78,6 +96,6 @@ def plot_ccd_image(
         def value_map(x: ArrayLike) -> ArrayLike:
             return np.log(1 + np.abs(x) / 100)
     fig, ax = plt.subplots(1, 1, )
-    ax.imshow(value_map(plotted_image), cmap=cmap)
+    imshow_cmap = ax.imshow(value_map(plotted_image), cmap=cmap)
     ax.axis("off")
-    return fig, ax
+    return fig, ax, imshow_cmap

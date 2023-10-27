@@ -31,6 +31,15 @@ def flash_light_row(oled, x, y, w, t):
     return None
 
 
+def flash_light_col(oled, x, y, w, t):
+    oled.vline(x, y, w, 1)
+    oled.show()
+    sleep(t)
+    oled.fill(0)
+    oled.show()
+    return None
+
+
 # Objeto i2c con el que nos vamos a comunicar
 i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
 # 128 pixeles horizontales, 64 verticales
@@ -51,13 +60,18 @@ while keep_running:
             x, y, l, h, t = params
             x, y, l, h, t = int(x), int(y), int(l), int(h), float(t)
             flash_rectangle(oled, x, y, l, h, t)
-        if command == "toggle":
-            t = params
+        if command == "togglerow":
+            t, = params
             t = float(t)
             x, y, w = 0, 32, 128
             flash_light_row(oled, x, y, w, t)
+        if command == "togglecol":
+            t, = params
+            t = float(t)
+            x, y, w = 0, 0, 64
+            flash_light_col(oled, x, y, w, t)
 
-    except Exception as e:
-        oled.text(str(e), 0, 0)
+    except Exception:
+        oled.fill(0)
         oled.show()
         keep_running = False

@@ -2,7 +2,7 @@
 
 Vvsub=70  # V: Tensión de sustrato a 70 V post limpiar
 
-imgFOLDER=`dirname $BASH_SOURCE`/images/TRAPS/13NOV2023_150K
+imgFOLDER=`dirname $BASH_SOURCE`/images/TRAPS/18NOV2023_127K
 #runname=cleanning
 exposure_time=8.0
 lightoledaxis='row'  # A col in OLED is horizontal at CCD screen
@@ -29,7 +29,7 @@ doSettings(){
 	lta NROW $rows
     cols=336
 	lta NCOL $cols
-    nsmpls=100
+    nsmpls=20
 	lta NSAMP $nsmpls
     expo=0
 	lta EXPOSURE $expo
@@ -42,23 +42,21 @@ mkdir -p $imgFOLDER
 
 source init_mit.sh
 
-source voltages/voltage_skp_lta_v2_C_safe.sh  # Preguntar!
-#source voltages/voltage_skp_lta_v2_microchip.sh  # Recomendación Santi
+#source voltages/voltage_skp_lta_v2_C_safe.sh  # Preguntar!
+source voltages/voltage_skp_lta_v2_microchip.sh  # Recomendación Santi
 
 source eraseANDepurge.sh
 lta set vsub $Vvsub
 
 doClean
 doClean
-doClean
 
 #for dtph in 50 100 200 400 800 1600 3200 6400 12800 25600 51200 102400 204800 409600 819200 1638400 3276800
-for dtph in 50 100 200 400 800 1600 3200
-#for dtph in 3200 6400 12800 25600 51200 102400 204800 409600 819200 1638400 3276800
+for dtph in 50 75 100 150 200 300 400 600 800 1200 1600 2400 3200 4800 6400 9600 12800 19200 25600 38400 51200 76800 102400 153600 204800 307200 409600
 do
     if [ ! -f "$lockfilename" ]; then break; fi
         lta sseq sequencers/sequencer_microchip_binned_brenda.xml
-	doClean
+        doClean
 
         lta sseq sequencers/sequencer_microchip_ppump.xml
         doSettings

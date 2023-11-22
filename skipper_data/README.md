@@ -94,7 +94,7 @@ skp -idn <nombre del archivo.fits>
 ```
 Esto genera un archivo `.fits` con el mismo nombre precedido por el prefijo "`proc_`".
 
-Para procesar una carpeta entera podemos usar le script `skp_folder.sh` que se encuentra en `~/Soft/ltaDAEMON_main/LAMBDA/images/TRAPS`. Para esto debemos modificar el archivo `skp_folder.sh` para que contenga el nombre de la carpeta a procesar y luego ejecutar:
+Para procesar una carpeta entera podemos usar le script `skp_folder.sh` que se encuentra en `~/Soft/ltaDAEMON_main/LAMBDA/images/TRAPS`. ~~Para esto debemos modificar el archivo `skp_folder.sh` para que contenga el nombre de la carpeta a procesar~~ (NOTA: este archivo desapareció. Encontré uno parecido en carpetas de Santi y dejé una copia en las mediciones de 21NOV o 22NOV aunque funciona distinto y debe colocarse en la carpeta que se quiere procesar en vez de ponerle el nombre) y luego ejecutar:
 ```bash
 source skp_folder.sh
 ```

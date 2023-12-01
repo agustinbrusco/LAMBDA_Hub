@@ -23,6 +23,7 @@ def get_rowcol_ovserscan(
 ) -> tuple[int]:
     row_overscan_len = int(imgs[0].header["NROW"]) - int(imgs[0].header["CCDNROW"]) // 2
     col_overscan_len = int(imgs[0].header["NCOL"]) - int(imgs[0].header["CCDNCOL"]) // 2
+    col_overscan_len -= 8  # Prescan is considered at NCOL
     return row_overscan_len, col_overscan_len
 
 

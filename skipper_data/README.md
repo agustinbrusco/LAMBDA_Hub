@@ -94,11 +94,11 @@ skp -idn <nombre del archivo.fits>
 ```
 Esto genera un archivo `.fits` con el mismo nombre precedido por el prefijo "`proc_`".
 
-Para procesar una carpeta entera podemos usar le script `skp_folder.sh` que se encuentra en `~/Soft/ltaDAEMON_main/LAMBDA/images/TRAPS`. ~~Para esto debemos modificar el archivo `skp_folder.sh` para que contenga el nombre de la carpeta a procesar~~ (NOTA: este archivo desapareció. Encontré uno parecido en carpetas de Santi y dejé una copia en las mediciones de 21NOV o 22NOV aunque funciona distinto y debe colocarse en la carpeta que se quiere procesar en vez de ponerle el nombre) y luego ejecutar:
+Para procesar mucho archivos dentro de una carpeta podemos usar el comando `skp_reg` que puede ejecutarse de manera idéntica a `skp` pero en vez del nombre de un archivo puede recibir una expresión regular que seleccione los archivos a procesar. Por ejemplo, para procesar todos los archivos que empiezan con `skp` y terminan en `.fz` de una carpeta podemos ejecutar:
 ```bash
-source skp_folder.sh
+skp_reg -idn skp*.fz
 ```
-Este script también contiene un patrón regex para seleccionar solo los archivos que queremos procesar. En general, para procesar todos los archivos de una carpeta usamos el patrón `*.fits` que selecciona todos los archivos que terminan en `.fits`. Para evitar las "`cleanimg`" que no queremos procesar usamos otros patrones que las excluyen. En el caso del script de Pocket Pumping usamos el patrón `*pocket*.fits` que selecciona todos los archivos que contienen la palabra "`pocket`" en su nombre, o bien `*dTph*.fits` que selecciona todos los archivos que contienen la palabra "`dTph`" en su nombre.
+En general, para procesar todos los archivos de una carpeta usamos el patrón `*.fits` que selecciona todos los archivos que terminan en `.fits`. Para evitar las "`cleanimg`" que no queremos procesar usamos otros patrones que las excluyen. En el caso del script de Pocket Pumping usamos el patrón `*pocket*.fits` que selecciona todos los archivos que contienen la palabra "`pocket`" en su nombre, o bien `*dTph*.fits` que selecciona todos los archivos que contienen la palabra "`dTph`" en su nombre.
 
 #### Comentario sobre la Edición de Archivos desde la Terminal
 Para modificar un archivo desde la terminal podemos usar el editor `nano`. Para abrir un archivo con `nano` ejecutamos:
@@ -112,9 +112,9 @@ También podemos guardar los cambios a medida que modificamos el archivo con `Ct
 ## Visualización de las Mediciones
 Para visualizar las mediciones usamos el software `ds9`. Para abrir un archivo `.fits` con `ds9` ejecutamos:
 ```bash
-ds9 -mecube <nombre_del_archivo_procesado.fits>
+ds9 -zscale -mecube <nombre_del_archivo_procesado.fits>
 ```
-O el alias con algún otro parámetro útil:
+O el alias:
 ```bash
 dsm <nombre_del_archivo_procesado.fits>
 ```

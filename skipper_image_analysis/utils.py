@@ -20,7 +20,7 @@ def get_overscan_from_fits(
 
 def get_rowcol_ovserscan(
     imgs: fits.hdu.hdulist.HDUList,
-) -> tuple[int]:
+) -> tuple[int, int]:
     row_overscan_len = int(imgs[0].header["NROW"]) - int(imgs[0].header["CCDNROW"]) // 2
     col_overscan_len = int(imgs[0].header["NCOL"]) - int(imgs[0].header["CCDNCOL"]) // 2
     col_overscan_len -= 8  # Prescan is considered at NCOL
@@ -52,7 +52,7 @@ def plot_ccd_image(
     remove_overscan: Optional[bool] = True,
     orientation: Optional[str] = "horizontal",
     value_map: Optional[Callable] = None,
-) -> tuple[plt.figure, plt.Axes]:
+) -> tuple[plt.figure, plt.Axes, plt.cm.ScalarMappable]:
     global BLUE_CUBE_CMAP
     if remove_overscan and isinstance(image, fits.hdu.hdulist.HDUList):
         row_overscan, col_overscan = get_rowcol_ovserscan(image)

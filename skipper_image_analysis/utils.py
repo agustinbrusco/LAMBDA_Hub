@@ -29,11 +29,19 @@ def get_rowcol_ovserscan(
 
 def correct_overscan(
     imgs: fits.hdu.hdulist.HDUList,
-) -> tuple[int]:
+) -> fits.hdu.hdulist.HDUList:
     row_overscan_len, col_overscan_len = get_rowcol_ovserscan(imgs)
     for i, frame in enumerate(imgs):
-        imgs[i].data -= np.mean(frame.data[:, -col_overscan_len:], axis=1, keepdims=True)
-        imgs[i].data -= np.median(frame.data[-row_overscan_len:, :], axis=0, keepdims=True)
+        imgs[i].data -= np.mean(  # media: os en cols se expone solo en registro serial
+            frame.data[:, -col_overscan_len:],
+            axis=1,
+            keepdims=True,
+        )  # Restamos media del overscan en columnas a cada fila.
+        imgs[i].data -= np.median(  # mediana: os en filas se expone en área activa
+            frame.data[-row_overscan_len:, :],
+            axis=0,
+            keepdims=True,
+        )  # Restamos mediana del overscan en filas a cada columna.
     return imgs
 
 

@@ -2,14 +2,25 @@ from typing import Callable, Optional
 import numpy as np
 from numpy.typing import ArrayLike
 from astropy.io import fits
+from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-
+GANANCIA = {
+    0: 210,
+    1: 232,
+    2: 207,
+    3: 159
+}
+PRESCAN_PIX = 8
 
 BLUE_CUBE_CMAP = LinearSegmentedColormap.from_list(
     name="blue_cube",
     colors=["black", "midnightblue", "blue", "steelblue", "slategray", "white"],
 )
+
+
+def gaussiana(x, amplitud, mu, sigma):
+    return amplitud * np.exp(-(x - mu)**2/(2*sigma**2))
 
 
 def get_overscan_from_fits(
@@ -108,3 +119,132 @@ def plot_ccd_image(
     imshow_cmap = ax.imshow(value_map(plotted_image), cmap=cmap)
     ax.axis("off")
     return fig, ax, imshow_cmap
+
+
+def prepare_frame(
+    skipper_image: fits.hdu.hdulist.HDUList,
+    frame_idx: int,
+    remove_row_median: bool = True,
+) -> ArrayLike:
+    r_overscan, c_overscan = get_rowcol_ovserscan(skipper_image)
+    # Extract Read Error from Column Overscan
+    overscan_frame = (
+        skipper_image[frame_idx].data[:, -c_overscan:]
+        / GANANCIA[frame_idx]
+    )  # e⁻
+    # Fit Gaussian to Column Overscan Distribution
+    charge_frec, charge_bins = np.histogram(
+        overscan_frame.flatten(),
+        bins=np.linspace(
+            overscan_frame.min(),
+            np.min([overscan_frame.max(), -overscan_frame.min()]),
+            500
+        ),
+        density=True,
+    )
+    try:  # Try to fit a Gaussian to the distribution
+        popt, *_ = curve_fit(
+            gaussiana,
+            charge_bins[:-1],
+            charge_frec,
+            p0=[1 / np.sqrt(2 * np.pi * 4), 0, overscan_frame.std()],
+        )
+        error = np.abs(popt[2])  # e⁻
+    except RuntimeError:  # If the fit fails, use the standard deviation and plot
+        error = overscan_frame.std()  # e⁻
+        # plt.plot(charge_bins[:-1], charge_frec, ".")
+        # plt.plot(charge_bins[:-1], gaussiana(charge_bins[:-1], *popt))
+        # plt.show()
+    # Correct Baseline from Overscan in Rows and Columns
+    skipper_image = correct_overscan(skipper_image)  # A.D.U.
+    frame = skipper_image[frame_idx].data  # A.D.U.
+    frame = frame[1:-r_overscan, PRESCAN_PIX:-c_overscan]  # A.D.U.
+    # CALCULAR MEDIANA Y DEVOLVER
+    carga_area_activa = frame.flatten() / GANANCIA[frame_idx]  # e⁻
+    mediana_carga = np.median(carga_area_activa)  # e⁻
+    borde_inferior = np.quantile(carga_area_activa, 0.005)  # e⁻
+    borde_superior = np.quantile(carga_area_activa, 0.99)  # e⁻
+    ancho_carga = np.std(
+        carga_area_activa[
+            (borde_inferior < carga_area_activa) & (carga_area_activa < borde_superior)
+        ],
+        ddof=1,
+    )  # e⁻
+    if remove_row_median:
+        # Remove the median of each row so that the median of the frame is zero
+        frame = frame - np.median(frame, axis=1, keepdims=True)  # A.D.U.
+
+    error_lectura = error * np.sqrt(
+        1 + 1 / r_overscan + 1 / c_overscan + 1 / frame.shape[1]
+    )  # e⁻: Error propagado tras aplicar todas las correcciones
+    error_final = np.sqrt(ancho_carga**2 + error_lectura**2)  # e⁻
+    return frame / GANANCIA[frame_idx], mediana_carga, error_final  # e⁻
+
+
+def filtro_dipolos(
+    frame: ArrayLike,
+    threshold_factor: float = 3,
+    corte_simetria: float = 20,  # %
+) -> tuple[list, list, ArrayLike]:
+    """Busca dipolos en un frame de la CCD. Para ello, se calcula el producto entre \
+cada pixel y su vecino inferior. Si el producto es menor que un umbral negativo, se \
+considera que hay un dipolo. Luego, se revisa que el dipolo sea simétrico, es decir, \
+que los valores de los pixeles sean similares en magnitud. Si el dipolo es simétrico, \
+se agrega a la lista de dipolos encontrados. Finalmente, se devuelve una lista con \
+las coordenadas de los dipolos, una máscara con los dipolos encontrados y una lista \
+con los valores de los dipolos.
+
+    Parameters:
+    -----------
+
+        `frame {ArrayLike}`: Frame de la CCD a analizar. Debe estar en unidades de \
+electrones.
+
+        `threshold_factor {float, optional}`: Factor por el que se multiplica al \
+ancho de la distribución de carga en la CCD para calcular el umbral de selección. Es \
+decir, un dipolo se considera válido si su autocorrelación es menor que \
+`-(threshold_factor * ancho_dist)**2`, donde `ancho_dist` es el ancho de la distribución \
+de carga en la CCD. Valor por defecto = 3.
+
+        `corte_simetria {float, optional}`: Defaults to 20.
+
+    Returns:
+    --------
+
+        `{tuple[list, list, ArrayLike]}`:
+    """
+    ancho_dist = np.std(
+        frame[
+            (frame > np.quantile(frame, 0.005))
+            & (frame < np.quantile(frame, 0.99))
+        ],
+        ddof=1,
+    )
+    threshold = (threshold_factor * ancho_dist)**2
+    prod_arr = frame[:-1] * frame[1:]
+    val_trampas = []
+    coordenadas_trampas = []
+    mascara = np.zeros_like(frame)
+    for j, col in enumerate(prod_arr.T):  # Recorro las columnas del frame
+        for i, val in enumerate(col):  # Recorro los valores de cada columna
+            if val < -threshold:
+                # Reviso que no esté en el borde del frame
+                if (i == 0) or (i == (len(col) - 1)):
+                    continue
+                else:
+                    i_lleno = np.argmax(frame[i - 1:i + 2, j]) + i - 1
+                    i_vacio = np.argmin(frame[i - 1:i + 2, j]) + i - 1
+                if np.abs(i_lleno - i_vacio) == 1:  # Confirmo adyacencia
+                    val_1 = frame[i_lleno, j]
+                    val_2 = frame[i_vacio, j]
+                    diferencia_relativa = np.abs(
+                        100
+                        * (np.abs(val_1) - np.abs(val_2))
+                        / np.max([np.abs(val_1), np.abs(val_2)])
+                    )
+                    if diferencia_relativa < corte_simetria:  # filtro por simetría
+                        coordenadas_trampas.append(((i_lleno, j), (i_vacio, j)))
+                        val_trampas.append(np.abs(val_1 - val_2) / 2)
+                        mascara[i_lleno, j] = 1
+                        mascara[i_vacio, j] = 1
+    return coordenadas_trampas, val_trampas, mascara

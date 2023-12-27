@@ -20,7 +20,7 @@ BLUE_CUBE_CMAP = LinearSegmentedColormap.from_list(
 
 
 def gaussiana(x, amplitud, mu, sigma):
-    return amplitud * np.exp(-(x - mu)**2/(2*sigma**2))
+    return amplitud * np.exp(-(x - mu)**2 / (2 * sigma**2))
 
 
 def get_overscan_from_fits(
@@ -183,8 +183,8 @@ def prepare_frame(
 
 def filtro_dipolos(
     frame: ArrayLike,
-    threshold_factor: float = 3,
-    corte_simetria: float = 20,  # %
+    threshold_factor: float = 4,
+    corte_simetria: float = 30,  # %
 ) -> tuple[list, list, ArrayLike]:
     """Busca dipolos en un frame de la CCD. Para ello, se calcula el producto entre \
 cada pixel y su vecino inferior. Si el producto es menor que un umbral negativo, se \

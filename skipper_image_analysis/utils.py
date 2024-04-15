@@ -65,6 +65,38 @@ def mask_baseline_error(frame_vals: ArrayLike) -> ArrayLike:
     return frame_vals
 
 
+def frame_coords_to_ccd_coords(
+    coord: tuple[int, int], frame_idx: int, CCDNROWS: int, CCDNCOLS: int
+) -> tuple[int, int]:
+    """Transforma las coordenadas relativas a un frame a las coordenadas de la \
+CCD considerando el frame y el overscan.
+    """
+    x, y = coord
+    row = x
+    col = y
+    if frame_idx in [1, 3]:
+        col = CCDNCOLS - y - 1
+    if frame_idx in [2, 3]:
+        row = CCDNROWS - x - 1
+    return row, col
+
+
+def ccd_coords_to_frame_coords(
+    coord: tuple[int, int], frame_idx: int, CCDNROWS: int, CCDNCOLS: int
+) -> tuple[int, int]:
+    """Transforma las coordenadas relativas a la CCD a las coordenadas de un \
+frame considerando el frame y el overscan.
+    """
+    row, col = coord
+    y = col
+    x = row
+    if frame_idx in [1, 3]:
+        y = CCDNCOLS - col - 1
+    if frame_idx in [2, 3]:
+        x = CCDNROWS - row - 1
+    return x, y
+
+
 def plot_ccd_image(
     image: ArrayLike | fits.hdu.hdulist.HDUList,
     cmap: Optional[str] = None,

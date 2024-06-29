@@ -194,14 +194,14 @@ def prepare_frame(
     # CALCULAR MEDIANA Y DEVOLVER
     carga_area_activa = frame.flatten() / GANANCIA[frame_idx]  # e⁻
     mediana_carga = np.median(carga_area_activa)  # e⁻
-    borde_inferior = np.quantile(carga_area_activa, 0.005)  # e⁻
-    borde_superior = np.quantile(carga_area_activa, 0.99)  # e⁻
-    ancho_carga = np.std(
-        carga_area_activa[
-            (borde_inferior < carga_area_activa) & (carga_area_activa < borde_superior)
-        ],
-        ddof=1,
-    )  # e⁻
+    # borde_inferior = np.quantile(carga_area_activa, 0.005)  # e⁻
+    # borde_superior = np.quantile(carga_area_activa, 0.99)  # e⁻
+    # ancho_carga = np.std(
+    #     carga_area_activa[
+    #         (borde_inferior < carga_area_activa) & (carga_area_activa < borde_superior)
+    #     ],
+    #     ddof=1,
+    # )  # e⁻
     if remove_row_median:
         # Remove the median of each row so that the median of the frame is zero
         frame = frame - np.median(frame, axis=1, keepdims=True)  # A.D.U.
@@ -209,7 +209,10 @@ def prepare_frame(
     error_lectura = error * np.sqrt(
         1 + 1 / r_overscan + 1 / c_overscan + 1 / frame.shape[1]
     )  # e⁻: Error propagado tras aplicar todas las correcciones
-    error_final = np.sqrt(ancho_carga**2 + error_lectura**2)  # e⁻
+    error_final = np.sqrt(
+        # ancho_carga**2
+        + error_lectura**2
+    )  # e⁻
     return frame / GANANCIA[frame_idx], mediana_carga, error_final  # e⁻
 
 

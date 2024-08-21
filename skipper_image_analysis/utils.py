@@ -169,7 +169,8 @@ def prepare_frame(
         overscan_frame.flatten(),
         bins=np.linspace(
             overscan_frame.min(),
-            np.min([overscan_frame.max(), -overscan_frame.min()]),
+            # np.min([overscan_frame.max(), -overscan_frame.min()]),
+            overscan_frame.max(),
             500
         ),
         density=True,

@@ -5,12 +5,8 @@ from astropy.io import fits
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-GANANCIA = {
-    0: 210,
-    1: 232,
-    2: 207,
-    3: 159
-}
+
+GANANCIA = {0: 210, 1: 232, 2: 207, 3: 159}
 PRESCAN_PIX = 8
 
 BLUE_CUBE_CMAP = LinearSegmentedColormap.from_list(
@@ -20,7 +16,7 @@ BLUE_CUBE_CMAP = LinearSegmentedColormap.from_list(
 
 
 def gaussiana(x, amplitud, mu, sigma):
-    return amplitud * np.exp(-(x - mu)**2 / (2 * sigma**2))
+    return amplitud * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
 
 
 def get_overscan_from_fits(
@@ -145,9 +141,14 @@ def plot_ccd_image(
     if cmap is None:
         cmap = BLUE_CUBE_CMAP
     if value_map is None:
+
         def value_map(x: ArrayLike) -> ArrayLike:
             return np.log(1 + np.abs(x) / 100)
-    fig, ax = plt.subplots(1, 1, )
+
+    fig, ax = plt.subplots(
+        1,
+        1,
+    )
     imshow_cmap = ax.imshow(value_map(plotted_image), cmap=cmap)
     ax.axis("off")
     return fig, ax, imshow_cmap
@@ -161,8 +162,7 @@ def prepare_frame(
     r_overscan, c_overscan = get_rowcol_ovserscan(skipper_image)
     # Extract Read Error from Column Overscan
     overscan_frame = (
-        skipper_image[frame_idx].data[:, -c_overscan:]
-        / GANANCIA[frame_idx]
+        skipper_image[frame_idx].data[:, -c_overscan:] / GANANCIA[frame_idx]
     )  # e⁻
     # Fit Gaussian to Column Overscan Distribution
     charge_frec, charge_bins = np.histogram(
@@ -171,7 +171,7 @@ def prepare_frame(
             overscan_frame.min(),
             # np.min([overscan_frame.max(), -overscan_frame.min()]),
             overscan_frame.max(),
-            500
+            500,
         ),
         density=True,
     )
@@ -212,7 +212,8 @@ def prepare_frame(
     )  # e⁻: Error propagado tras aplicar todas las correcciones
     error_final = np.sqrt(
         # ancho_carga**2
-        + error_lectura**2
+        # mediana_carga  # Poisson Variance == Poisson Mean
+        +(error_lectura**2)
     )  # e⁻
     return frame / GANANCIA[frame_idx], mediana_carga, error_final  # e⁻
 
@@ -250,13 +251,11 @@ de carga en la CCD. Valor por defecto = 3.
         `{tuple[list, list, ArrayLike]}`:
     """
     ancho_dist = np.std(
-        frame[
-            (frame > np.quantile(frame, 0.005))
-            & (frame < np.quantile(frame, 0.99))
-        ],
+        frame[(frame > np.quantile(frame, 0.005)) & (frame < np.quantile(frame, 0.99))],
         ddof=1,
     )
-    threshold = (threshold_factor * ancho_dist)**2
+    threshold = (threshold_factor * ancho_dist) ** 2
+    # frame = frame - np.median(frame, axis=1, keepdims=True)  # Resto la mediana
     prod_arr = frame[:-1] * frame[1:]
     val_trampas = []
     coordenadas_trampas = []
@@ -268,8 +267,8 @@ de carga en la CCD. Valor por defecto = 3.
                 if (i == 0) or (i == (len(col) - 1)):
                     continue
                 else:
-                    i_lleno = np.argmax(frame[i - 1:i + 2, j]) + i - 1
-                    i_vacio = np.argmin(frame[i - 1:i + 2, j]) + i - 1
+                    i_lleno = np.argmax(frame[i - 1 : i + 2, j]) + i - 1
+                    i_vacio = np.argmin(frame[i - 1 : i + 2, j]) + i - 1
                 if np.abs(i_lleno - i_vacio) == 1:  # Confirmo adyacencia
                     val_1 = frame[i_lleno, j]
                     val_2 = frame[i_vacio, j]
